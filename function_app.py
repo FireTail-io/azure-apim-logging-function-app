@@ -91,14 +91,17 @@ def rewrite_data(data):
 
 @app.function_name(name="fteventhublogsTrigger")
 @app.event_hub_message_trigger(
-    arg_name="event",
+    arg_name="events",
     event_hub_name=os.getenv("EVENT_HUB_NAME", "test2"),
     connection="eventhub_connection_str",
+    cardinality="many",
 )
-def test_function(event: func.EventHubEvent):
-    event = json.loads(event.get_body().decode("utf-8"))
-    logging.info(
-        "Python EventHub trigger processed an event: %s",
-    )
-    data = [rewrite_data(event)]
-    bulk_post(data)
+def test_function(events: func.EventHubEvent):
+    bulk_data = []
+    logging.info("Received %s events", str(len(events)))
+    for event in events:
+        event = json.loads(event.get_body().decode("utf-8"))
+        logging.info("Python EventHub trigger processed an event: %s", event)
+        bulk_data.append(rewrite_data(event))
+    for i in range(0, len(bulk_data), 10):
+        bulk_post(bulk_data[i : i + 10])
