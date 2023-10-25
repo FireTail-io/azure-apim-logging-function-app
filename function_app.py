@@ -96,7 +96,7 @@ def rewrite_data(data):
     connection="eventhub_connection_str",
     cardinality="many",
 )
-def test_function(events: func.EventHubEvent):
+def main(events: func.EventHubEvent):
     bulk_data = []
     logging.info("Received %s events", str(len(events)))
     for event in events:
